@@ -141,7 +141,7 @@ const Index = () => {
       // Fallback refetch in case realtime is delayed
       fetchAssignments();
     },
-    [editing, dateKey]
+    [editing, dateKey, fetchAssignments]
   );
 
   const handleDelete = useCallback(async (id: string) => {
