@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Dashboard } from "@/components/Dashboard";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { WorkloadChart } from "@/components/WorkloadChart";
+import { HistoryReport } from "@/components/HistoryReport";
 import { Assignment, getDateKey } from "@/lib/workData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -170,30 +171,32 @@ const Index = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground leading-tight">ระบบแจกจ่ายงาน</h1>
-              <p className="text-xs text-muted-foreground">เคมีเกษตรภัณฑ์</p>
             </div>
           </div>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className={cn("gap-2 font-normal", !isToday && "border-primary/40")}>
-                <CalendarIcon className="h-4 w-4" />
-                {format(selectedDate, "d MMMM yyyy", { locale: th })}
-                {isToday && (
-                  <span className="ml-1 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">วันนี้</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="end">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateChange}
-                initialFocus
-                className="p-3 pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <div className="flex items-center gap-2">
+            <HistoryReport onSelectDate={handleDateChange} />
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className={cn("gap-2 font-normal", !isToday && "border-primary/40")}>
+                  <CalendarIcon className="h-4 w-4" />
+                  {format(selectedDate, "d MMMM yyyy", { locale: th })}
+                  {isToday && (
+                    <span className="ml-1 text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded">วันนี้</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={handleDateChange}
+                  initialFocus
+                  className="p-3 pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
       </header>
 
