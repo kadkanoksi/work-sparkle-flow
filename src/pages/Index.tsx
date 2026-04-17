@@ -138,6 +138,8 @@ const Index = () => {
         }
         toast.success("มอบหมายงานเรียบร้อย");
       }
+      // Fallback refetch in case realtime is delayed
+      fetchAssignments();
     },
     [editing, dateKey]
   );
