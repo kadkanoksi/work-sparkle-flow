@@ -76,16 +76,11 @@ export interface Assignment {
 }
 
 export function getDateKey(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
-
-export function loadAssignments(dateKey: string): Assignment[] {
-  const raw = localStorage.getItem(`assignments-${dateKey}`);
-  return raw ? JSON.parse(raw) : [];
-}
-
-export function saveAssignments(dateKey: string, assignments: Assignment[]): void {
-  localStorage.setItem(`assignments-${dateKey}`, JSON.stringify(assignments));
+  // Local YYYY-MM-DD (avoid UTC offset issues)
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export function getStaffWorkload(assignments: Assignment[], staffName: string) {

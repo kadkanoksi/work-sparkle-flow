@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -9,42 +9,78 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { STAFF, CHEMICALS, ANALYSIS_TIME, Assignment } from "@/lib/workData";
-import { Send } from "lucide-react";
+import { Send, X, Save } from "lucide-react";
 import { toast } from "sonner";
 
 interface Props {
-  onAssign: (assignment: Assignment) => void;
+  onSubmit: (data: Omit<Assignment, "id" | "timestamp">) => Promise<void> | void;
+  editing?: Assignment | null;
+  onCancelEdit?: () => void;
 }
 
-export function AssignmentForm({ onAssign }: Props) {
+export function AssignmentForm({ onSubmit, editing, onCancelEdit }: Props) {
   const [staff, setStaff] = useState("");
   const [chemical, setChemical] = useState("");
   const [sampleCount, setSampleCount] = useState(1);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  useEffect(() => {
+    if (editing) {
+      setStaff(editing.staff);
+      setChemical(editing.chemical);
+      setSampleCount(editing.sampleCount);
+    }
+  }, [editing]);
+
+  const reset = () => {
+    setStaff("");
+    setChemical("");
+    setSampleCount(1);
+  };
+
+  const handleSubmit = async () => {
     if (!staff || !chemical || sampleCount < 1) {
       toast.error("กรุณากรอกข้อมูลให้ครบถ้วน");
       return;
     }
     const perSample = ANALYSIS_TIME[chemical] ?? 1.5;
-    const assignment: Assignment = {
-      id: crypto.randomUUID(),
-      staff,
-      chemical,
-      sampleCount,
-      estimatedHours: perSample * sampleCount,
-      timestamp: new Date().toISOString(),
-    };
-    onAssign(assignment);
-    setStaff("");
-    setChemical("");
-    setSampleCount(1);
-    toast.success("มอบหมายงานเรียบร้อย");
+    setSubmitting(true);
+    try {
+      await onSubmit({
+        staff,
+        chemical,
+        sampleCount,
+        estimatedHours: perSample * sampleCount,
+      });
+      reset();
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const isEditing = !!editing;
 
   return (
     <div className="glass-card rounded-lg p-6 space-y-5">
-      <h2 className="text-lg font-semibold text-foreground">มอบหมายงาน</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-foreground">
+          {isEditing ? "แก้ไขงาน" : "มอบหมายงาน"}
+        </h2>
+        {isEditing && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              reset();
+              onCancelEdit?.();
+            }}
+            className="gap-1"
+          >
+            <X className="h-4 w-4" />
+            ยกเลิก
+          </Button>
+        )}
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-muted-foreground">ผู้รับงาน</label>
@@ -84,9 +120,9 @@ export function AssignmentForm({ onAssign }: Props) {
           />
         </div>
 
-        <Button onClick={handleSubmit} className="gap-2">
-          <Send className="h-4 w-4" />
-          ยืนยันส่ง
+        <Button onClick={handleSubmit} disabled={submitting} className="gap-2">
+          {isEditing ? <Save className="h-4 w-4" /> : <Send className="h-4 w-4" />}
+          {isEditing ? "บันทึกการแก้ไข" : "ยืนยันส่ง"}
         </Button>
       </div>
       {staff && chemical && (
