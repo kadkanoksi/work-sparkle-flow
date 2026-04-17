@@ -41,64 +41,64 @@ const Index = () => {
   const dateKey = getDateKey(selectedDate);
   const isToday = dateKey === getDateKey(new Date());
 
-  // Fetch when date changes
-  useEffect(() => {
-    let active = true;
-    setLoading(true);
-    supabase
+  const fetchAssignments = useCallback(async () => {
+    const { data, error } = await supabase
       .from("assignments")
       .select("*")
       .eq("assignment_date", dateKey)
-      .order("created_at", { ascending: true })
-      .then(({ data, error }) => {
-        if (!active) return;
-        if (error) {
-          toast.error("โหลดข้อมูลล้มเหลว: " + error.message);
-        } else {
-          setAssignments((data as DbRow[]).map(rowToAssignment));
-        }
-        setLoading(false);
-      });
-    return () => {
-      active = false;
-    };
+      .order("created_at", { ascending: true });
+    if (error) {
+      toast.error("โหลดข้อมูลล้มเหลว: " + error.message);
+      return;
+    }
+    setAssignments((data as DbRow[]).map(rowToAssignment));
   }, [dateKey]);
 
-  // Realtime subscription
+  // Fetch + realtime subscription (combined to avoid race conditions)
   useEffect(() => {
+    let active = true;
+    setLoading(true);
+    fetchAssignments().finally(() => {
+      if (active) setLoading(false);
+    });
+
     const channel = supabase
-      .channel(`assignments-${dateKey}`)
+      .channel(`assignments-rt-${dateKey}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
         {
           event: "*",
           schema: "public",
           table: "assignments",
-          filter: `assignment_date=eq.${dateKey}`,
         },
         (payload) => {
+          // Filter by current date on the client to avoid filter-syntax issues
+          const row = (payload.new ?? payload.old) as DbRow | undefined;
+          if (!row || row.assignment_date !== dateKey) return;
+
           if (payload.eventType === "INSERT") {
-            const row = payload.new as DbRow;
+            const r = payload.new as DbRow;
             setAssignments((prev) =>
-              prev.some((a) => a.id === row.id) ? prev : [...prev, rowToAssignment(row)]
+              prev.some((a) => a.id === r.id) ? prev : [...prev, rowToAssignment(r)]
             );
           } else if (payload.eventType === "UPDATE") {
-            const row = payload.new as DbRow;
+            const r = payload.new as DbRow;
             setAssignments((prev) =>
-              prev.map((a) => (a.id === row.id ? rowToAssignment(row) : a))
+              prev.map((a) => (a.id === r.id ? rowToAssignment(r) : a))
             );
           } else if (payload.eventType === "DELETE") {
-            const row = payload.old as DbRow;
-            setAssignments((prev) => prev.filter((a) => a.id !== row.id));
+            const r = payload.old as DbRow;
+            setAssignments((prev) => prev.filter((a) => a.id !== r.id));
           }
         }
       )
       .subscribe();
 
     return () => {
+      active = false;
       supabase.removeChannel(channel);
     };
-  }, [dateKey]);
+  }, [dateKey, fetchAssignments]);
 
   const handleDateChange = useCallback((date: Date | undefined) => {
     if (!date) return;
