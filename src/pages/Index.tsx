@@ -35,6 +35,7 @@ const rowToAssignment = (r: DbRow): Assignment => ({
 });
 
 const Index = () => {
+  const { user, signOut } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
