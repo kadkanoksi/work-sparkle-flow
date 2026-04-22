@@ -279,6 +279,27 @@ function openPrintWindow(
   const capacity = STAFF.length * WORK_HOURS * Math.max(workingDays, 1);
   const utilization = capacity > 0 ? Math.round((totalHours / capacity) * 100) : 0;
 
+  // Calculate overload summary per staff for the entire period
+  const overloadSummary = STAFF.map((name) => {
+    const staffRows = rows.filter((r) => r.staff === name);
+    const totalHoursWorked = staffRows.reduce((s, r) => s + r.estimatedHours, 0);
+    const staffWorkingDays = perDay.filter((d) =>
+      d.rows.some((r) => r.staff === name)
+    ).length;
+    const staffCapacity = staffWorkingDays > 0 ? staffWorkingDays * WORK_HOURS : WORK_HOURS;
+    const overloadPercent = Math.max(0, Math.round(((totalHoursWorked - staffCapacity) / staffCapacity) * 100));
+    const excessHours = Math.max(0, totalHoursWorked - staffCapacity);
+    return {
+      name,
+      totalHours: totalHoursWorked,
+      capacity: staffCapacity,
+      overloadPercent,
+      excessHours,
+      isOver: totalHoursWorked > staffCapacity,
+      workingDays: staffWorkingDays,
+    };
+  }).sort((a, b) => b.overloadPercent - a.overloadPercent);
+
   const html = `<!DOCTYPE html>
 <html lang="th">
 <head>
@@ -479,9 +500,55 @@ function openPrintWindow(
     </div>
     <div class="kpi">
       <div class="label">การใช้กำลังการผลิต</div>
-      <div class="value">${utilization}<span class="unit">%</span></div>
+    <div class="value">${utilization}<span class="unit">%</span></div>
     </div>
   </div>
+
+  <!-- Overload Summary Section -->
+  <h2 class="section-title">สรุปการคิด Overload ของบุคคล (สะสมรายอาทิตย์)</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ผู้ปฏิบัติงาน</th>
+        <th class="num">จำนวนวันทำงาน</th>
+        <th class="num">ชั่วโมงทำงาน (ชม.)</th>
+        <th class="num">กำลังการผลิต (ชม.)</th>
+        <th class="num">Overload %</th>
+        <th class="center">สถานะ</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${overloadSummary
+        .filter((s) => s.workingDays > 0)
+        .map(
+          (s) => `
+        <tr style="${s.isOver ? 'color: hsl(0, 70%, 45%); background: hsl(0, 70%, 97%);' : 'color: hsl(150, 50%, 35%);'}">
+          <td><strong>${SHORT_NAMES[s.name] ?? s.name}</strong></td>
+          <td class="num">${s.workingDays}</td>
+          <td class="num">${s.totalHours.toFixed(1)}</td>
+          <td class="num">${s.capacity.toFixed(1)}</td>
+          <td class="num">${s.overloadPercent > 0 ? '+' + s.overloadPercent + '%' : '0%'}</td>
+          <td class="center"><strong>${s.isOver ? 'Overload (+' + s.excessHours.toFixed(1) + ' ชม.)' : 'ปกติ'}</strong></td>
+        </tr>`
+        )
+        .join('')}
+      <tr style="font-weight: 600; background: hsl(210, 30%, 94%);">
+        <td>รวม</td>
+        <td class="num">${overloadSummary.filter((s) => s.workingDays > 0).length} คน</td>
+        <td class="num">${totalHours.toFixed(1)}</td>
+        <td class="num">${capacity.toFixed(1)}</td>
+        <td class="num">${utilization}%</td>
+        <td class="center">${overloadSummary.filter((s) => s.isOver).length > 0 ? overloadSummary.filter((s) => s.isOver).length + ' คนทำงานเกินค่า' : 'ทุกคนทำงานปกติ'}</td>
+      </tr>
+    </tbody>
+  </table>
+        <td class="num">${totalHours.toFixed(1)}</td>
+        <td class="num">${capacity.toFixed(1)}</td>
+        <td class="num">${utilization}%</td>
+        <td class="center">${overloadSummary.filter((s) => s.isOver).length > 0 ? overloadSummary.filter((s) => s.isOver).length + ' 	 ' : '		2	'}</td>
+      </tr>
+    </tbody>
+  </table>
 
   <div class="two-col">
     <div>
