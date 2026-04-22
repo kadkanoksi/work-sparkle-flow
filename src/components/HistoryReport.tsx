@@ -500,9 +500,53 @@ function openPrintWindow(
     </div>
     <div class="kpi">
       <div class="label">การใช้กำลังการผลิต</div>
-      <div class="value">${utilization}<span class="unit">%</span></div>
+    <div class="value">${utilization}<span class="unit">%</span></div>
     </div>
   </div>
+
+  <!-- Overload Summary Section -->
+  <h2 class="section-title">		 
+	 		  
+
+			 4</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>		</th>
+        <th class="num">
+ </th>
+        <th class="num">		
+ ( )</th>
+        <th class="num">		 ( )</th>
+        <th class="num">Overload %</th>
+        <th class="center">	  </th>
+      </tr>
+    </thead>
+    <tbody>
+      ${overloadSummary
+        .filter((s) => s.workingDays > 0)
+        .map(
+          (s) => `
+        <tr class="${s.isOver ? 'overload' : 'normal'}">
+          <td><strong>${SHORT_NAMES[s.name] ?? s.name}</strong></td>
+          <td class="num">${s.workingDays}</td>
+          <td class="num">${s.totalHours.toFixed(1)}</td>
+          <td class="num">${s.capacity.toFixed(1)}</td>
+          <td class="num">+${s.overloadPercent}%</td>
+          <td class="center">${s.isOver ? '  (+' + s.excessHours.toFixed(1) + ' )' : '9	'}</td>
+        </tr>`
+        )
+        .join('')}
+      <tr style="font-weight: 600; background: hsl(210, 30%, 94%);">
+        <td>	</td>
+        <td class="num">${overloadSummary.filter((s) => s.workingDays > 0).length} </td>
+        <td class="num">${totalHours.toFixed(1)}</td>
+        <td class="num">${capacity.toFixed(1)}</td>
+        <td class="num">${utilization}%</td>
+        <td class="center">${overloadSummary.filter((s) => s.isOver).length > 0 ? overloadSummary.filter((s) => s.isOver).length + ' 	 ' : '		2	'}</td>
+      </tr>
+    </tbody>
+  </table>
 
   <div class="two-col">
     <div>
