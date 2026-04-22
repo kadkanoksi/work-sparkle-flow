@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
-import { CalendarIcon, FlaskConical, Loader2 } from "lucide-react";
+import { CalendarIcon, FlaskConical, Loader2, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
