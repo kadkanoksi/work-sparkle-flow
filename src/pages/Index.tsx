@@ -198,6 +198,23 @@ const Index = () => {
                 />
               </PopoverContent>
             </Popover>
+            {user && (
+              <div className="flex items-center gap-2 pl-2 ml-1 border-l border-border/60">
+                <span className="hidden md:inline text-xs text-muted-foreground max-w-[180px] truncate">
+                  {user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
+                  title="ออกจากระบบ"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">ออกจากระบบ</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </header>
