@@ -505,21 +505,16 @@ function openPrintWindow(
   </div>
 
   <!-- Overload Summary Section -->
-  <h2 class="section-title">		 
-	 		  
-
-			 4</h2>
+  <h2 class="section-title">สรุปการคิด Overload ของบุคคล (สะสมรายอาทิตย์)</h2>
   <table>
     <thead>
       <tr>
-        <th>		</th>
-        <th class="num">
- </th>
-        <th class="num">		
- ( )</th>
-        <th class="num">		 ( )</th>
+        <th>ผู้ปฏิบัติงาน</th>
+        <th class="num">จำนวนวันทำงาน</th>
+        <th class="num">ชั่วโมงทำงาน (ชม.)</th>
+        <th class="num">กำลังการผลิต (ชม.)</th>
         <th class="num">Overload %</th>
-        <th class="center">	  </th>
+        <th class="center">สถานะ</th>
       </tr>
     </thead>
     <tbody>
@@ -527,19 +522,26 @@ function openPrintWindow(
         .filter((s) => s.workingDays > 0)
         .map(
           (s) => `
-        <tr class="${s.isOver ? 'overload' : 'normal'}">
+        <tr style="${s.isOver ? 'color: hsl(0, 70%, 45%); background: hsl(0, 70%, 97%);' : 'color: hsl(150, 50%, 35%);'}">
           <td><strong>${SHORT_NAMES[s.name] ?? s.name}</strong></td>
           <td class="num">${s.workingDays}</td>
           <td class="num">${s.totalHours.toFixed(1)}</td>
           <td class="num">${s.capacity.toFixed(1)}</td>
-          <td class="num">+${s.overloadPercent}%</td>
-          <td class="center">${s.isOver ? '  (+' + s.excessHours.toFixed(1) + ' )' : '9	'}</td>
+          <td class="num">${s.overloadPercent > 0 ? '+' + s.overloadPercent + '%' : '0%'}</td>
+          <td class="center"><strong>${s.isOver ? 'Overload (+' + s.excessHours.toFixed(1) + ' ชม.)' : 'ปกติ'}</strong></td>
         </tr>`
         )
         .join('')}
       <tr style="font-weight: 600; background: hsl(210, 30%, 94%);">
-        <td>	</td>
-        <td class="num">${overloadSummary.filter((s) => s.workingDays > 0).length} </td>
+        <td>รวม</td>
+        <td class="num">${overloadSummary.filter((s) => s.workingDays > 0).length} คน</td>
+        <td class="num">${totalHours.toFixed(1)}</td>
+        <td class="num">${capacity.toFixed(1)}</td>
+        <td class="num">${utilization}%</td>
+        <td class="center">${overloadSummary.filter((s) => s.isOver).length > 0 ? overloadSummary.filter((s) => s.isOver).length + ' คนทำงานเกินค่า' : 'ทุกคนทำงานปกติ'}</td>
+      </tr>
+    </tbody>
+  </table>
         <td class="num">${totalHours.toFixed(1)}</td>
         <td class="num">${capacity.toFixed(1)}</td>
         <td class="num">${utilization}%</td>
