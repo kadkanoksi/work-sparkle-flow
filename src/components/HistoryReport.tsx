@@ -279,6 +279,27 @@ function openPrintWindow(
   const capacity = STAFF.length * WORK_HOURS * Math.max(workingDays, 1);
   const utilization = capacity > 0 ? Math.round((totalHours / capacity) * 100) : 0;
 
+  // Calculate overload summary per staff for the entire period
+  const overloadSummary = STAFF.map((name) => {
+    const staffRows = rows.filter((r) => r.staff === name);
+    const totalHoursWorked = staffRows.reduce((s, r) => s + r.estimatedHours, 0);
+    const staffWorkingDays = perDay.filter((d) =>
+      d.rows.some((r) => r.staff === name)
+    ).length;
+    const staffCapacity = staffWorkingDays > 0 ? staffWorkingDays * WORK_HOURS : WORK_HOURS;
+    const overloadPercent = Math.max(0, Math.round(((totalHoursWorked - staffCapacity) / staffCapacity) * 100));
+    const excessHours = Math.max(0, totalHoursWorked - staffCapacity);
+    return {
+      name,
+      totalHours: totalHoursWorked,
+      capacity: staffCapacity,
+      overloadPercent,
+      excessHours,
+      isOver: totalHoursWorked > staffCapacity,
+      workingDays: staffWorkingDays,
+    };
+  }).sort((a, b) => b.overloadPercent - a.overloadPercent);
+
   const html = `<!DOCTYPE html>
 <html lang="th">
 <head>
