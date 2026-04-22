@@ -542,13 +542,6 @@ function openPrintWindow(
       </tr>
     </tbody>
   </table>
-        <td class="num">${totalHours.toFixed(1)}</td>
-        <td class="num">${capacity.toFixed(1)}</td>
-        <td class="num">${utilization}%</td>
-        <td class="center">${overloadSummary.filter((s) => s.isOver).length > 0 ? overloadSummary.filter((s) => s.isOver).length + ' 	 ' : '		2	'}</td>
-      </tr>
-    </tbody>
-  </table>
 
   <div class="two-col">
     <div>

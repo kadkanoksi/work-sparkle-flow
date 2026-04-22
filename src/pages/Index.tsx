@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
-import { CalendarIcon, FlaskConical, Loader2 } from "lucide-react";
+import { CalendarIcon, FlaskConical, Loader2, LogOut } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -34,6 +35,7 @@ const rowToAssignment = (r: DbRow): Assignment => ({
 });
 
 const Index = () => {
+  const { user, signOut } = useAuth();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -196,6 +198,23 @@ const Index = () => {
                 />
               </PopoverContent>
             </Popover>
+            {user && (
+              <div className="flex items-center gap-2 pl-2 ml-1 border-l border-border/60">
+                <span className="hidden md:inline text-xs text-muted-foreground max-w-[180px] truncate">
+                  {user.email}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={signOut}
+                  className="gap-1.5 text-muted-foreground hover:text-foreground"
+                  title="ออกจากระบบ"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">ออกจากระบบ</span>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </header>
