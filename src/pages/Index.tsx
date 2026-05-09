@@ -10,7 +10,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { WorkloadChart } from "@/components/WorkloadChart";
 import { HistoryReport } from "@/components/HistoryReport";
-import { Assignment, getDateKey } from "@/lib/workData";
+import { Assignment, getDateKey, SHORT_NAMES, WORK_HOURS, getStaffWorkload } from "@/lib/workData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -138,6 +138,24 @@ const Index = () => {
           return;
         }
         toast.success("มอบหมายงานเรียบร้อย");
+
+        // ส่งแจ้งเตือนเข้า LINE กลุ่ม
+        const shortName = SHORT_NAMES[data.staff] ?? data.staff;
+        const prevHours = getStaffWorkload(assignments, data.staff).totalHours;
+        const newHours = prevHours + data.estimatedHours;
+        const wasOverload = prevHours > WORK_HOURS;
+        const isOverload = newHours > WORK_HOURS;
+
+        let message = `🧪 มอบหมายงานใหม่\n👤 ${shortName}\n🔬 ${data.chemical} × ${data.sampleCount} ตัวอย่าง\n⏱ ${data.estimatedHours.toFixed(1)} ชม. (รวม ${newHours.toFixed(1)}/${WORK_HOURS} ชม.)`;
+        if (isOverload && !wasOverload) {
+          message += `\n⚠️ แจ้งเตือน: ${shortName} มีงานเกินกำลัง (Overload)!`;
+        } else if (isOverload) {
+          message += `\n⚠️ ยังคงสถานะ Overload`;
+        }
+
+        supabase.functions.invoke("notify-line", { body: { message } }).catch((err) => {
+          console.error("LINE notify failed", err);
+        });
       }
       // Fallback refetch in case realtime is delayed
       fetchAssignments();
