@@ -10,7 +10,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { AssignmentForm } from "@/components/AssignmentForm";
 import { WorkloadChart } from "@/components/WorkloadChart";
 import { HistoryReport } from "@/components/HistoryReport";
-import { Assignment, getDateKey } from "@/lib/workData";
+import { Assignment, getDateKey, SHORT_NAMES, WORK_HOURS, getStaffWorkload } from "@/lib/workData";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
