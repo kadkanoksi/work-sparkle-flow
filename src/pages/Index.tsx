@@ -206,6 +206,10 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleTestLine} className="gap-2">
+              <Bell className="h-4 w-4" />
+              ทดสอบ LINE
+            </Button>
             <HistoryReport onSelectDate={handleDateChange} />
             <Popover>
               <PopoverTrigger asChild>
