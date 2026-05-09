@@ -178,6 +178,19 @@ const Index = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }, []);
 
+  const handleTestLine = useCallback(async () => {
+    const t = toast.loading("กำลังส่งข้อความทดสอบไปยัง LINE...");
+    const { data, error } = await supabase.functions.invoke("notify-line", {
+      body: { message: "✅ ทดสอบการแจ้งเตือนจากระบบแจกจ่ายงาน — เชื่อมต่อสำเร็จ" },
+    });
+    toast.dismiss(t);
+    if (error || (data && (data as { error?: string }).error)) {
+      toast.error("ส่งไม่สำเร็จ: " + (error?.message ?? (data as { error?: string }).error));
+    } else {
+      toast.success("ส่งข้อความทดสอบสำเร็จ ✓");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
