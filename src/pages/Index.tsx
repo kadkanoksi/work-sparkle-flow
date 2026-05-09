@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { format } from "date-fns";
 import { th } from "date-fns/locale";
-import { CalendarIcon, FlaskConical, Loader2 } from "lucide-react";
+import { CalendarIcon, FlaskConical, Loader2, Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -178,6 +178,19 @@ const Index = () => {
     window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
   }, []);
 
+  const handleTestLine = useCallback(async () => {
+    const t = toast.loading("กำลังส่งข้อความทดสอบไปยัง LINE...");
+    const { data, error } = await supabase.functions.invoke("notify-line", {
+      body: { message: "✅ ทดสอบการแจ้งเตือนจากระบบแจกจ่ายงาน — เชื่อมต่อสำเร็จ" },
+    });
+    toast.dismiss(t);
+    if (error || (data && (data as { error?: string }).error)) {
+      toast.error("ส่งไม่สำเร็จ: " + (error?.message ?? (data as { error?: string }).error));
+    } else {
+      toast.success("ส่งข้อความทดสอบสำเร็จ ✓");
+    }
+  }, []);
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -193,6 +206,10 @@ const Index = () => {
           </div>
 
           <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleTestLine} className="gap-2">
+              <Bell className="h-4 w-4" />
+              ทดสอบ LINE
+            </Button>
             <HistoryReport onSelectDate={handleDateChange} />
             <Popover>
               <PopoverTrigger asChild>
